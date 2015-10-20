@@ -1,32 +1,23 @@
-function CreateSpeciesTemplatesFilt(initdir, wavbase, segopts)
-%Modify the following to the location of your versions of these programs.
-%Alternatively, create a structure with these filenames saved,
-%and load it as part of the code.
-%analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
-%plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
-%butterdir='/Users/wynnmeyer/bachtroglabsong';
-%isshort='n';
-%fs=6000;
-%filtcut=200;
-%load wmoptions;
+function CreateSpeciesTemplatesFiltLoadOpts(initdir, wavbase, segopts)
+%Set defaults for the following:
+analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
+plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
+butterdir='/Users/wynnmeyer/bachtroglabsong';
+isshort='n';
+fs=6000;
+filtcut=200;
+
+%To do: Only load segopts if the file exists (if not,
+%throw a warning message)
+%Replace the defaults if desired:
+load(segopts); %This is a structure with the following variables saved:
+%analyzerdir, plotanalyzerdir, segmenterdir, butterdir (paths),
+%fs, diffThreshold, template_pca_dimension (FlySongSegmenter options),
+%isshort, filtcut (filtering and clustering options)
+relvars = {'fs','diffThreshold','template_pca_dimension'};
+wmoptions = load(segopts,relvars{:})
 
 currentFolder = pwd;
-
-if nargin < 5 || isempty(filtcut)
-    filtcut = 100;
-    if nargin < 4 || isempty(fs)
-        fs = 6000;
-        if nargin < 3 || isempty(isshort)
-            isshort = 'n';
-            if nargin < 2 || isempty(wavbase)
-                wavbase = 'Channel1_122214_ssulf.wav';
-                if nargin < 1 || isempty(initdir)
-                    initdir = 'J:/SoundData/PerSpeciesRecordingsMono/ssulf'; %location of wavfile
-                end
-            end
-        end
-    end
-end
 wav_file = strcat(initdir,'/',wavbase); %read this in?
 song_range = [];
 outdir = initdir;
@@ -34,8 +25,8 @@ outname = strcat(wavbase,'_data');
 newtempoutname = strcat('TemplatesFrom',wavbase,'Filt');
 
 %Generate a data file from the .wav file
-%Can one convert wav -> "data" without FlySongSegmenter?
-%Yes! From FlySongSegmenterWAV:
+%To do: Only run if _data file does not exist
+%From FlySongSegmenterWAV:
 fprintf('Grabbing song from wav file %s.\n', wav_file);
 if ~isempty(song_range)
     song = audioread(wav_file,song_range);
@@ -48,12 +39,12 @@ cd(butterdir);
 dfilt = tybutter(d,filtcut,fs,'high');
 save(strcat(outdir,'/',outname,'.mat'),'d', 'dfilt');
 
-%Create 'options' structure.
+%Possible 'options' structures.
 %wmoptions = struct('fs',6000,'diffThreshold',20,'template_pca_dimension',10);
-shortoptions = struct('fs',6000,'diffThreshold',3,'template_pca_dimension',5);
-wmoptions10 = struct('fs',6000,'diffThreshold',10,'template_pca_dimension',10);
-wmoptions30 = struct('fs',6000,'diffThreshold',30,'template_pca_dimension',10);
-wmoptions = wmoptions30;
+%shortoptions = struct('fs',6000,'diffThreshold',3,'template_pca_dimension',5);
+%wmoptions10 = struct('fs',6000,'diffThreshold',10,'template_pca_dimension',10);
+%wmoptions30 = struct('fs',6000,'diffThreshold',30,'template_pca_dimension',10);
+
 %Reduced PCA dimension (default 50) because of following error:
 %Index exceeds matrix dimensions.
 %Error in createTemplates (line 70)
@@ -64,6 +55,8 @@ cd(analyzerdir);
 
 %Try instead generating new templates based just on this file.
 %Also plot all templates in this script.
+%To do: Create a new folder for all these output files
+%To do: Shut down parallel pool after completion
 if strcmp(isshort,'y')
     fprintf('Using short IPI options.\n');
     [newtemplates,allPeakIdx,allNormalizedPeaks,isNoise,scores,options] = createTemplates(dfilt, shortoptions);

@@ -1,12 +1,24 @@
-function RunClusteringOneChannelFilt5pm(wav_file, prevtempfile, whichsignal, isshort, fs, ipiptl)
+function RunClusteringOneChannelFilt5pmLoadOpts(wav_file, prevtempfile, whichsignal, ipiptl, segopts)
+%To do: generate both IPI and PTL/PPB plots/files by default
+%To do: Allow PTL/PPB analyses with 5-pulse minimum
+%To do: Enable specification of minimum pulse number
+%To do: Load previously assigned data if available
 %Modify the following to the location of your versions of these programs.
 %Alternatively, create a structure with these filenames saved,
 %and load it as part of the code.
-analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
-plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
-butterdir='/Users/wynnmeyer/bachtroglabsong';
-wmoptions = struct('fs',6000,'diffThreshold',20,'template_pca_dimension',10);
+%analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
+%plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
+%butterdir='/Users/wynnmeyer/bachtroglabsong';
+%wmoptions = struct('fs',6000,'diffThreshold',20,'template_pca_dimension',10);
 %load wmoptions;
+%filtcut=200;
+%isshort='n';
+load(segopts); %This is a structure with the following variables saved:
+%analyzerdir, plotanalyzerdir, segmenterdir, butterdir (paths),
+%fs, diffThreshold, template_pca_dimension (FlySongSegmenter options),
+%isshort, filtcut (filtering and clustering options)
+relvars = {'fs','diffThreshold','template_pca_dimension'};
+wmoptions = load(segopts,relvars{:});
 
 addpath(segmenterdir,plotanalyzerdir,butterdir);
 currentFolder = pwd;
@@ -14,21 +26,15 @@ currentFolder = pwd;
 %IPI
 %Estimate runtime:
 tic;
-if nargin < 6 || isempty(ipiptl)
+if nargin < 4 || isempty(ipiptl)
     ipiptl = 'IPI';
-    if nargin < 5 || isempty(fs)
-        fs = 6000;
-        if nargin < 4 || isempty(isshort)
-            isshort = 'n';
-            if nargin < 3 || isempty(whichsignal)
-                whichsignal = [1 2 3 4 5 6 7 8 9 10 11 12];
-                if nargin < 2 || isempty(prevtempfile)
-                    prevtempfile = 'J:/SoundData/PerSpeciesRecordingsMono/ssulf/Channel1_122214_ssulf.wav_dataSSulfurigasterTemplatesFromChannel1_122214.mat';
-                    if nargin < 1 || isempty(wav_file)
-                        wav_file = 'J:/SoundData/PerSpeciesRecordingsMono/ssulf/Channel1_122214_ssulf.wav'; %location of wavfile
-                    end
+    if nargin < 3 || isempty(whichsignal)
+        whichsignal = [1 2 3 4 5 6 7 8 9 10 11 12];
+            if nargin < 2 || isempty(prevtempfile)
+                prevtempfile = 'J:/SoundData/PerSpeciesRecordingsMono/ssulf/Channel1_122214_ssulf.wav_dataSSulfurigasterTemplatesFromChannel1_122214.mat';
+                if nargin < 1 || isempty(wav_file)
+                    wav_file = 'J:/SoundData/PerSpeciesRecordingsMono/ssulf/Channel1_122214_ssulf.wav'; %location of wavfile
                 end
-            end
         end
     end
 end
@@ -57,7 +63,7 @@ if exist(strcat(outname,'.mat'),'file') == 2
             %Save this file
             d=song;
             %cd(butterdir);
-            dfilt = tybutter(d,100,fs,'high');
+            dfilt = tybutter(d,filtcut,fs,'high');
             save(strcat(outname,'.mat'),'d','dfilt');
         else
             error('Wav file does not exist: %s.\n', wav_file);
@@ -188,7 +194,7 @@ if strcmp(ipiptl, 'IPI') == 1
     %save(strcat(gmout,'.mat'),'ipigm2','ipigm3','ipigm4');
     %save(strcat(gmout,'.txt'),'wav_file','wcount','ipigm2','-ascii');
 
-    [Y,X] = hist(w,500); %switch to 'histogram' in more recent releases of MATLAB
+    [Y,X] = hist(w,100); %switch to 'histogram' in more recent releases of MATLAB
     Y = Y  ./ (sum(Y)*(X(2)-X(1)));
     plot(X*1000,Y)
     title(strcat('IPI histogram for ',wavbase))
@@ -200,10 +206,10 @@ if strcmp(ipiptl, 'IPI') == 1
         savefig(strcat(outname,newtempoutname,'FiltSignalTemplatesIPIHist.fig'));
     end
     %also plot just 5-pulse IPIs
-    [Y,X] = hist(w5,500); %switch to 'histogram' in more recent releases of MATLAB
+    [Y,X] = hist(w5,100); %switch to 'histogram' in more recent releases of MATLAB
     Y = Y  ./ (sum(Y)*(X(2)-X(1)));
     plot(X*1000,Y)
-    title(strcat('IPI histogram for ',wavbase))
+    title(strcat('5-pulse minimum IPI histogram for ',wavbase))
     xlabel('Inter-pulse interval (IPI), in ms')
     ylabel ('Count')
     if isshort == 'y'

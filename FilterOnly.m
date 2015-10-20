@@ -3,7 +3,8 @@ function FilterOnly(initdir, wavbase, song_range, filtcut)
 %FilterAndPlot('J:/SoundData/Athabasca','Channel1_050315_x13F1.wav',[],200)
 
 %Modify the following line to the location of tybutter.m
-butterdir='C:/Users/Dungeon/Downloads';
+%butterdir='C:/Users/Dungeon/Downloads';
+butterdir='/Users/wynnmeyer/repos/bachtroglabsong';
 addpath(butterdir);
 
 if nargin < 4 || isempty(filtcut)

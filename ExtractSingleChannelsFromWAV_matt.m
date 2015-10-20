@@ -1,12 +1,15 @@
 %Required for running wavNaming.
 %Attempt to write code to split a multi-channel .wav file.
 %Input: .wav filename, channel to extract, output filename
+%Currently saves .wav file after 100 Hz filter is applied.
+%What is the most up-to-date version of this?
 %E.g.:
 %ExtractSingleChannelsFromWAV('J:/SoundData/Recordings07302014/20140730T103939a.wav',5,'J:/SoundData/PerSpeciesRecordingsMono/albomicans/Channel5_073014_albomicans.wav_data')
 %function ExtractSingleChannelsFromWAV(wavfile,whichchannel,outname,fs)
 function errchan = ExtractSingleChannelsFromWAV_matt(wavfile,whichchannel,outname)
     %Modify the following to the directory where you saved tybutter.m
-    butterdir='D:\BackupFromDesktop072815\MATLABCode';  %changed!
+    %butterdir='D:\BackupFromDesktop072815\MATLABCode';  %changed!
+    butterdir='/Users/wynnmeyer/repos/bachtroglabsong';
     
     addpath(butterdir)
     %Extract one channel from a wavfile, apply filter, and save the data.
@@ -24,7 +27,7 @@ function errchan = ExtractSingleChannelsFromWAV_matt(wavfile,whichchannel,outnam
     %e.g.: http://www.mathworks.com/matlabcentral/newsreader/view_thread/302506
     % construct the object, set the filename equal to your .wav file
     % set the SamplesPerFrame property to your desired value
-    h = dsp.AudioFileReader('Filename',wavfile,'SamplesPerFrame',1024); 
+    h = dsp.AudioFileReader('Filename',wavfile,'SamplesPerFrame',10000); 
     % add a for loop to repeat the following for each channel (what is kept in
     % memory?)
     % just initialize a vector of zeros to carry the first empty frame--we'll get rid of this
