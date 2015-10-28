@@ -101,13 +101,13 @@ function makeWaves_savio_raw(dateArg)
         [~,~,raw] = xlsread(excelFile, 'Sheet1',  xlRange, 'basic');
 
         % Generate a list of filenames that will be saved.
-        %filePathsNoExt = {};
-        filePathsNoExt = cell(1, NUMCHANNELS);
+        filePathsNoExt = {};
+        %filePathsNoExt = cell(1, NUMCHANNELS);
         for i = 1:NUMCHANNELS
             % First check if this channel should be excluded.
             if ismember(i, EXCLUDECHANNELS)
                 %filePathsNoExt = [filePathsNoExt; 'blank']; % Make a blank placeholder for the exlcluded channel.
-                filePathsNoExt(i, 1) = 'blank';
+                filePathsNoExt
                 continue; % Don't bother looking at this row in the spreadsheet; move on to the next row.
             end
             % Convert Excel's date format (e.g. 8/5/2015) to yyyy-mm-dd (e.g. 2015-08-05).
@@ -147,8 +147,7 @@ function makeWaves_savio_raw(dateArg)
             %If this field is either blank or NA, exclude this row.
             if sum(strcmp(maleSpecies,{'','NA','NaN'})) > 0
                 EXCLUDECHANNELS = [EXCLUDECHANNELS; i];
-                %filePathsNoExt = [filePathsNoExt; 'blank']; % Make a blank placeholder for the excluded channel.
-                filePathsNoExt(i, 1) = 'blank';
+                filePathsNoExt = [filePathsNoExt; 'blank']; % Make a blank placeholder for the excluded channel.
                 continue; % Don't bother looking at this row in the spreadsheet; move on to the next row.
             end
             maleStrain = raw{i, 13}; %added 6/4/15
@@ -181,8 +180,7 @@ function makeWaves_savio_raw(dateArg)
             folderPath = [SAVETOPATH folderName '/'];
             verifyPath(folderPath, i);
             filePathNoExt = [folderPath fileNameCleaned];
-            %filePathsNoExt = [filePathsNoExt; filePathNoExt];
-            filePathsNoExt(i, 1) = filePathNoExt;
+            filePathsNoExt = [filePathsNoExt; filePathNoExt];
         end
         timetoreadexcel = toc;
 
@@ -197,18 +195,18 @@ function makeWaves_savio_raw(dateArg)
             end
             switch SAVEFILT
                 case 'raw'
-                    if exist([filePathsNoExt{i} '-raw.wav'], 'file') == 0
+                    if exist([filePathsNoExt{i} '-raw.wav']) == 0
                         oneIsNotDone = 1;
                         break;
                     end
                 case 'filt'
-                    if exist([filePathsNoExt{i} '-filt' num2str(FILTCUT) '.wav'], 'file') == 0
+                    if exist([filePathsNoExt{i} '-filt' num2str(FILTCUT) '.wav']) == 0
                         oneIsNotDone = 1;
                         break;
                     end
                 case 'both'
-                    if exist([filePathsNoExt{i} '-raw.wav'], 'file') == 0 || ...
-                          exist([filePathsNoExt{i} '-filt' num2str(FILTCUT) '.wav'], 'file') == 0
+                    if exist([filePathsNoExt{i} '-raw.wav']) == 0 || ...
+                          exist([filePathsNoExt{i} '-filt200.wav']) == 0
                         oneIsNotDone = 1;
                         break;
                     end
@@ -217,8 +215,8 @@ function makeWaves_savio_raw(dateArg)
                     %but assume it's both.
                     FEEDBACK = [FEEDBACK; ['SAVEFILT should be raw, filt, or both. Assuming both for ' datestr(DATETODAY, 'yyyy-mm-dd')]];
                     FEEDBACK
-                    if exist([filePathsNoExt{i} '-raw.wav'], 'file') == 0 | ...
-                          exist([filePathsNoExt{i} '-filt' num2str(FILTCUT) '.wav'], 'file') == 0
+                    if exist([filePathsNoExt{i} '-raw.wav']) == 0 | ...
+                          exist([filePathsNoExt{i} '-filt' num2str(FILTCUT) '.wav']) == 0
                         oneIsNotDone = 1;
                         break;
                     end
@@ -238,7 +236,7 @@ function makeWaves_savio_raw(dateArg)
         binFileNoExt = findBinFileExt(AB(f));
         wavFile = [binFileNoExt '.wav'];
         disp('Looking for .bin and .wav files...');
-        switch exist(wavFile, 'file')
+        switch exist(wavFile)
             case 0
                 % The .wav file does not exist. Attempt to convert the .bin file.
                 disp('Converting .bin file to .wav file. This may take a few minutes.');
@@ -346,7 +344,7 @@ function makeWaves_savio_raw(dateArg)
                         % Write a raw .wav file.
                         if strcmp(SAVEFILT, 'raw') | strcmp(SAVEFILT, 'both')
                             filePathRaw = [char(filePathsNoExt(i)) '-raw.wav'];
-                            switch exist(filePathRaw, 'file') % Determine if a file for this channel already exists.
+                            switch exist(filePathRaw) % Determine if a file for this channel already exists.
                                 case 0 % The file does not exist; create it.
                                     audiowrite(filePathRaw, audiodata(:,i), 6000); % Write channel i to a .wav file.
                                     Extracted{i} = 'Yes'; % Note that channel i was extracted.
@@ -355,9 +353,9 @@ function makeWaves_savio_raw(dateArg)
                             end
                         end
                         % Filter out 200 Hz.
-                        if strcmp(SAVEFILT, 'filt') || strcmp(SAVEFILT, 'both')
+                        if strcmp(SAVEFILT, 'filt') | strcmp(SAVEFILT, 'both')
                             filePath200 = [char(filePathsNoExt(i)) '-filt' num2str(FILTCUT) '.wav'];
-                            switch exist(filePath200, 'file') % Determine if a file for this channel already exists.
+                            switch exist(filePath200) % Determine if a file for this channel already exists.
                                 case 0 % The file does not exist; create it.
                                     filt200 = tybutter(audiodata(:,i), FILTCUT, h.SampleRate, 'high');
                                     % Then write to a new file.
@@ -643,7 +641,7 @@ function verifyPath(folderPath, i)
         return;
     end
     global FEEDBACK;
-    switch exist(folderPath, 'dir')
+    switch exist(folderPath)
         case 0
             % A folder for this species does not exist.
             FEEDBACK = [FEEDBACK; ['ERROR: The folder ' folderPath ' does not exist.']];
