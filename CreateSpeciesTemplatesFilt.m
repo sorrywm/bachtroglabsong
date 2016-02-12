@@ -1,9 +1,14 @@
-function CreateSpeciesTemplatesFilt(initdir, wavbase, isshort, fs, filtcut)
+function CreateSpeciesTemplatesFilt(initdir, wavbase, segopts)
 %Modify the following to the location of your versions of these programs.
-analyzerdir = 'D:/BackupFromDesktop072815/MATLABCode/MATLAB/FlySongClusterSegment/FlySongClusterSegment/';
-plotanalyzerdir = 'D:/BackupFromDesktop072815/MATLABCode/fly_song_analyzer_032412/fly_song_analyzer_032412/';
-butterdir='D:/BackupFromDesktop072815/MATLABCode';
-load wmoptions;
+%Alternatively, create a structure with these filenames saved,
+%and load it as part of the code.
+%analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
+%plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
+%butterdir='/Users/wynnmeyer/bachtroglabsong';
+%isshort='n';
+%fs=6000;
+%filtcut=200;
+%load wmoptions;
 
 currentFolder = pwd;
 
@@ -48,6 +53,7 @@ save(strcat(outdir,'/',outname,'.mat'),'d', 'dfilt');
 shortoptions = struct('fs',6000,'diffThreshold',3,'template_pca_dimension',5);
 wmoptions10 = struct('fs',6000,'diffThreshold',10,'template_pca_dimension',10);
 wmoptions30 = struct('fs',6000,'diffThreshold',30,'template_pca_dimension',10);
+wmoptions = wmoptions30;
 %Reduced PCA dimension (default 50) because of following error:
 %Index exceeds matrix dimensions.
 %Error in createTemplates (line 70)

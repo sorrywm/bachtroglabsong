@@ -1,13 +1,12 @@
 function RunClusteringOneChannelFilt5pm(wav_file, prevtempfile, whichsignal, isshort, fs, ipiptl)
 %Modify the following to the location of your versions of these programs.
-%segmenterdir = '/Users/dbachtrog1/Desktop/FlySongSegmenter/';
-segmenterdir = 'D:/BackupFromDesktop072815/MATLABCode/FlySong/FlySongSegmenter';
-%plotanalyzerdir = '/Users/dbachtrog1/Desktop/fly_song_analyzer_032412/';
-plotanalyzerdir='D:/BackupFromDesktop072815/MATLABCode/fly_song_analyzer_032412/fly_song_analyzer_032412/';
-%butterdir='/Users/dbachtrog1/Desktop/'; %Where is tybutter.m saved?
-butterdir='D:/BackupFromDesktop072815/MATLABCode/';
-%load wmoptions;
+%Alternatively, create a structure with these filenames saved,
+%and load it as part of the code.
+analyzerdir = '/Users/wynnmeyer/repos/FlySongClusterSegment/';
+plotanalyzerdir = '/Users/wynnmeyer/repos/fly_song_analyzer_032412/';
+butterdir='/Users/wynnmeyer/bachtroglabsong';
 wmoptions = struct('fs',6000,'diffThreshold',20,'template_pca_dimension',10);
+%load wmoptions;
 
 addpath(segmenterdir,plotanalyzerdir,butterdir);
 currentFolder = pwd;

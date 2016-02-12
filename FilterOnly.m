@@ -3,11 +3,16 @@ function FilterOnly(initdir, wavbase, song_range, filtcut)
 %FilterAndPlot('J:/SoundData/Athabasca','Channel1_050315_x13F1.wav',[],200)
 
 %Modify the following line to the location of tybutter.m
-butterdir='C:/Users/Dungeon/Downloads';
-addpath(butterdir);
+%butterdir='C:/Users/Dungeon/Downloads';
+%butterdir='/Users/wynnmeyer/repos/bachtroglabsong';
+%addpath(butterdir);
 
 if nargin < 4 || isempty(filtcut)
     filtcut = 100;
+end
+%convert filtcut to numeric if string
+if ischar(filtcut)
+    filtcut = str2num(filtcut);
 end
 %segmenterdir = 'C:/Users/Dungeon/Documents/GitHub/Flysong/FlySongSegmenter/';
 %Read in a single channel .wav file.
@@ -17,7 +22,7 @@ out_file = strcat(initdir,'/',wavbase,'_filt',num2str(filtcut),'.wav');
 if exist(out_file,'file') ~= 2
     %Only write if file doesn't already exist.
     fprintf('Grabbing song from wav file %s.\n', wav_file);
-    if ~isempty(song_range)
+    if ~isempty(song_range) && strcmp(song_range,'[]') == 0
         [song,fs] = audioread(wav_file,song_range);
         outname=strcat(wavbase,'_',num2str(song_range(1)),'-',num2str(song_range(2)),'_data');
         out_file = strcat(initdir,'/',wavbase,'_',num2str(song_range(1)),'-',num2str(song_range(2)),'_filt',num2str(filtcut),'.wav');
