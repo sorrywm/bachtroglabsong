@@ -5,15 +5,15 @@ This repo contains a collection of wrapper scripts for processing multi-channel 
 
 The latest/most broadly applicable script for each of the following tasks is listed below:<p>
 1) Extract individual channels from a 32-channel .wav file:
-makeWaves_savio_raw.m <p>
+makeWaves_savio_raw.m 
 2) Implement a high-pass filter on an individual .wav file (using Ty Hedrick's wrapper for the Matlab Signal Processing Toolbox Butterworth filter):
-FilterAndPlot.m <p>
+FilterAndPlot.m 
 3) Generate pulse templates from a single-channel .wav file:
-CreateSpeciesTemplatesFiltLoadOpts.m <p>
+CreateSpeciesTemplatesFiltLoadOpts.m 
 4) Identify pulses within a single-channel .wav file:
-RunClusteringOneChannelFilt5pmLoadOpts.m <p>
+RunClusteringOneChannelFilt5pmLoadOpts.m 
 5) Characterize flies in spreadsheet by contents of Notes cell (currently identifies indicators of wing damage, though this could be modified for other text searches):
-findDamagedMales.m <p>
+findDamagedMales.m 
 6) Summarize parameters of pulse song from the output of pulse identification for a set of songs:
 SummarizeSongStatdist.R
 
