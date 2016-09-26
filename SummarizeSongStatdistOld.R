@@ -26,7 +26,6 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
     StatMean <- c(rep(NA,length(Files)))
     StatMedian <- c(rep(NA,length(Files)))
     StatMode <- c(rep(NA,length(Files)))
-    StatMaxDensity <- c(rep(NA,length(Files)))
     StatLQ <- c(rep(NA,length(Files)))
     StatUQ <- c(rep(NA,length(Files)))
     StatTot <- c(rep(NA,length(Files))) #For total pulse train length (amount of singing)
@@ -39,7 +38,6 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
     NoIPI[1] <- length(ipi)
     isdamaged <- FALSE
     if (file.exists(damagefile)) {
-        print(paste("Getting damagefile:",damagefile))
         damagedf <- read.csv(damagefile,header=T,as.is=T)
         if (splitfiles[[1]][1] %in% damagedf$Filename) {
             dmale <- damagedf[which(damagedf$Filename == splitfiles[[1]][1]),]$MaleWings
@@ -62,22 +60,20 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
         remfirst <- TRUE
     }
     if (NoIPI[1] == 0) {
-        StatMean[1] <- StatMedian[1] <- StatMode[1] <- StatMaxDensity[1] <- StatLQ[1] <- StatUQ[1] <- StatTot[1] <- NA
-    } else {
-        StatMean[1] <- mean(ipi)
-        StatMedian[1] <- median(ipi)
-        density_vals <- density(ipi)
-	StatMaxDensity[1] <- density_vals$x[which.max(density_vals$y)]
-        if(length(ipi) > 10) {
-            h <- hist(ipi, breaks=round(length(ipi)/10))
-            StatMode[1] <- h$mids[h$counts == max(h$counts)][1]
-        } else {
-            StatMode[1] <- names(sort(-table(ipi)))[1]
-        } 
-        StatLQ[1] <- quantile(ipi,.25)
-        StatUQ[1] <- quantile(ipi,.75)
-        StatTot[1] <- sum(ipi)
+        StatMean[1] <- StatMedian[1] <- StatMode[1] <- StatLQ[1] <- StatUQ[1] <- StatTot[1] <- NA
+        next
     }
+    StatMean[1] <- mean(ipi)
+    StatMedian[1] <- median(ipi)
+    if(length(ipi) > 10) {
+        h <- hist(ipi, breaks=round(length(ipi)/10))
+        StatMode[1] <- h$mids[h$counts == max(h$counts)][1]
+    } else {
+        StatMode[1] <- names(sort(-table(ipi)))[1]
+    } 
+    StatLQ[1] <- quantile(ipi,.25)
+    StatUQ[1] <- quantile(ipi,.75)
+    StatTot[1] <- sum(ipi)
     for (f in 2:length(Files)) {
         #For each file, scan it as numeric (assume a vector of IPIs).
         print(paste("Scanning",Files[f]))
@@ -87,7 +83,7 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
         splitfiles = strsplit(Files[f],'_data')
         WavFiles[f] = splitfiles[[1]][1]
         if (NoIPI[f] == 0) {
-            StatMean[f] <- StatMedian[f] <- StatMode[f] <- StatMaxDensity[f] <- StatLQ[f] <- StatUQ[f] <- StatTot[f] <- NA
+            StatMean[f] <- StatMedian[f] <- StatMode[f] <- StatLQ[f] <- StatUQ[f] <- StatTot[f] <- NA
             next
         }
         isdamaged=FALSE
@@ -107,8 +103,6 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
         }
         StatMean[f] <- mean(ipi)
         StatMedian[f] <- median(ipi)
-        density_vals <- density(ipi)
-        StatMaxDensity[f] <- density_vals$x[which.max(density_vals$y)]
         if (length(ipi) > 10) {
             h <- hist(ipi, breaks=round(length(ipi)/10))
     	    StatMode[f] <- h$mids[h$counts == max(h$counts)][1]
@@ -127,22 +121,15 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
     #First write without summary rows.
     Species <- c(rep(wspecies,length(StatMean)))
     print("Writing output without totals")
-    outdf <- data.frame(Species,StatMean,StatMedian,StatMode,StatMaxDensity,StatLQ,StatUQ,StatTot,NoIPI,Files,WavFiles)
-    namestofix <- c("StatMean","StatMedian","StatMode","StatMaxDensity","StatLQ","StatUQ","StatTot","NoIPI")
-    for (n in 1:length(namestofix)) {
-        names(outdf)[which(names(outdf) == namestofix[n])] <- paste(statname,namestofix[n],sep="")
-    }
+    outdf <- data.frame(Species,StatMean,StatMedian,StatMode,StatLQ,StatUQ,StatTot,NoIPI,Files,WavFiles)
     #merge with damagefile, if it exists
     if (file.exists(damagefile)) {
         outdf <- merge(outdf, damagedf, by.x="WavFiles", by.y="Filename", all.x=TRUE)
     }
     write.csv(outdf,file=paste(outname,statname,"NoCombined.csv",sep=""),row.names=F,quote=F)
-    #Currently writing combined info without damage info.... Maybe make this a separate analysis?
     Files <- c(Files,paste("AllWithSongFor",wspecies,sep=""),paste("SubWithSongFor",wspecies,sep=""))
     StatMean <- c(StatMean,mean(fullipi),mean(repipi))
     StatMedian <- c(StatMedian,median(fullipi),median(repipi))
-    density_vals <- density(ipi)
-    StatMaxDensity <- c(StatMaxDensity,density_vals$x[which.max(density_vals$y)])
     if (length(fullipi) > 10) {
         hf <- hist(fullipi, breaks=round(length(fullipi)/10))
         smf <- hf$mids[hf$counts == max(hf$counts)][1]
@@ -189,15 +176,12 @@ SummarizeSongStatDist <- function(spdir, statname, outname, wspecies, minno, dam
     #dev.off()
     Species <- c(rep(wspecies,length(StatMean)))
     print("Writing output with totals")
-    outdf <- data.frame(Species,StatMean,StatMedian,StatMode,StatMaxDensity,StatLQ,StatUQ,StatTot,NoIPI,Files)
-    for (n in 1:length(namestofix)) {
-        names(outdf)[which(names(outdf) == namestofix[n])] <- paste(statname,namestofix[n],sep="")
-    }
+    outdf <- data.frame(Species,StatMean,StatMedian,StatMode,StatLQ,StatUQ,StatTot,NoIPI,Files)
     write.csv(outdf,file=paste(outname,statname,".csv",sep=""),row.names=F,quote=F)
     setwd(origdir)
 }
 if (length(args)>5) {
-    print(paste("Incorporating damage file information for",args[2],"stats in",args[4]))
+    print("Using damage file information")
     SummarizeSongStatDist(args[1],args[2],args[3],args[4],as.numeric(args[5]),args[6])
 } else {
     SummarizeSongStatDist(args[1],args[2],args[3],args[4],as.numeric(args[5]))
